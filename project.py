@@ -31,7 +31,7 @@ def start_game(name):
     st.session_state.suspicion = 0
     st.session_state.max_suspicion = 5
     st.session_state.pouch = []
-    st.session_state.rooms = ["Introduction", "Bedroom", "The Compound", "Ritual Site", "Prolific Detective", "Outside"]
+    st.session_state.rooms = ["Introduction", "Bedroom", "Corridor", "The Compound", "Ritual Site", "Prolific Detective", "Outside"]
     st.session_state.room_number = 0
     st.session_state.result_type = ""
     st.session_state.result_message = ""
@@ -173,7 +173,6 @@ def show_player_info():
         st.write(f"🎒 Pouch: {', '.join(st.session_state.pouch)}")
     st.caption(
         f"Room {st.session_state.room_number + 1}"
-        f" of {len(st.session_state.rooms)}"
     )
     st.divider()
 
@@ -211,7 +210,7 @@ def show_continue_button(text = "Continue"):
 # ================================================================
 ####CULT NAME IS A PLACEHOLDER, REMEMBER TO CHANGE IT
 if not st.session_state.game_started:
-    st.write("You have spent months trying to worm your way into a cult known as 'The Cloaks'. \nYou finally managed to pinpoint the next town they would hit. \nYou let yourself get taken in order to join them, and after spending even longer gaining their trust, they begin treating you as a member. \nThey do not show their faces or give you their real names. \nYou came here to find out what happened to your son, if he is still alive, to put a stop to this group, and to stop more families from being broken apart. \nThey are preparing for a ritual, before moving onto another town.")
+    st.write("You have spent months trying to worm your way into a cult known as 'The Cloaks'. \n\nYou finally managed to pinpoint the next town they would hit. \n\nYou let yourself get taken in order to join them, and after spending even longer gaining their trust, they begin treating you as a member. \n\nThey do not show their faces or give you their real names. \n\nYou came here to find out what happened to your son, if he is still alive, to put a stop to this group, and to stop more families from being broken apart. \n\nThey are preparing for a ritual, before moving onto another town.")
     name = st.text_input("What is your name? ")
 
     if st.button("Begin."):
@@ -236,7 +235,7 @@ else:
     # ROOM 1 — INTRODUCTION (MODEL SIMPLE CONTINUE NAVIGATION)
     # ============================================================
     if room == "introduction":
-        show_room("👁 The Beginning", "You wake up in your bed. \nYou aren't sure of what this building is. \nThe windows are boarded up, and so you have never managed to peer outside. \nBefore they recruited you, they would keep a bag on your head inbetween interviews and trials. \nNow, they don't. They believe you are one of them.")
+        show_room("👁 The Beginning", "You wake up in your bed. \n\nYou aren't sure of what this building is. \n\nThe windows are boarded up, and so you have never managed to peer outside. \n\nBefore they recruited you, they would keep a bag on your head inbetween interviews and trials. \n\nNow, they don't. They believe you are one of them.")
         
         show_continue_button("🛏️ Get up from the bed.")
 
@@ -244,7 +243,7 @@ else:
     # ROOM 2 — BEDROOM (MODEL RESULT -> CONTINUE)
     # ============================================================
     elif room == "bedroom":
-        show_room("💤 The Bedroom", "Your bedroom is a fancy place. Adorned in expensive tapestries and antique furniture. \nA chandelier hangs in the middle of the room. It is made of glass, refracting the candle flames like little specks of stardust throughout the room. \nYour attire has been carefully laid out on a chair next to your bed. \nIt isn't like the usual bland, black cloak you usually wear. This one is adorned with golden lines and symbols you do not know.")
+        show_room("💤 The Bedroom", "Your bedroom is a fancy place. Adorned in expensive tapestries and antique furniture. \n\nA chandelier hangs in the middle of the room. It is made of glass, refracting the candle flames like little specks of stardust throughout the room. \n\nYour attire has been carefully laid out on a chair next to your bed. \n\nIt isn't like the usual bland, black cloak you usually wear. This one is adorned with golden lines and symbols you do not know.")
         if not st.session_state.action_complete:
             left, right = st.columns(2)
             with left:
@@ -269,3 +268,18 @@ else:
         else:
             show_result()
             show_continue_button()
+
+    # ============================================================
+    # ROOM 3 — The Corridor
+    # ============================================================
+    elif room == "corridor":
+        show_room("🚪 The Corridor", "You step through your bedroom door to find yourself in corridor that stretches as far as the eye can see, in both directions. \n\n Various doors, just like yours, litter both walls of the corridor. \n\nThe silence of this place is suffocating. \n\nYou have to stop the ritual, but you have some time to explore beforehand, and hopefully find clues as to what happened to your son.")
+        show_continue_button()
+
+    # ============================================================
+    # ROOM 3.1 — The Compound
+    # ============================================================    
+    elif room == "compound":
+        show_room("☢️ The Compound", "After heading down the corridor, you arrive at the main salon of the building. \n\nMuch like the corridor, a deafening silence is present. Even the candle flames dare not whisper. \n\n\n\n'Ding \n\nDong \n\nDing \n\nDong'. \n\nYou have heard this sound before - it's the clock bell signifying your time is running out. \n\nThis bell plays 3 times - once every hour, to alert the memembers to hurry with preperations. \n\nWhen the third bell rings you have to be at the ritual site, or they will not let you in, and all of these months of hard work will have been for naught.")
+        
+
