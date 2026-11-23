@@ -120,9 +120,8 @@ Do not introduce new choices.
         st.error(f"Gemini error: {error}")
         return fallback_message
 
-######COME BACK TO NOT CHOSEN YET
 def generate_story(room, action, outcome, fallback_message):
-    if room.lower() != "NOT CHOSEN YET":
+    if room.lower() != "the bedroom":
         return fallback_message
 
     if "gemini_scene_story" not in st.session_state:
@@ -226,9 +225,47 @@ else:
     show_player_info()
     room = get_current_room()
 
-    if st.session_state.health <= 0:
-     show_room("💀 Game Over", "The cult has become too suspicious of you. They will make sure you never leave alive.")
-     st.error("You have been taken care of. Better luck next time.")
-     if st.button("🔄 Try Again"):
-        restart_game()
-     st.stop()
+    if st.session_state.suspicion >= st.session_state.max_suspicion:
+        show_room("💀 Game Over", "The cult has become too suspicious of you. They will make sure you never leave alive.")
+        st.error("You have been taken care of. Better luck next time.")
+        if st.button("🔄 Try Again"):
+            restart_game()
+        st.stop()
+
+    # ============================================================
+    # ROOM 1 — INTRODUCTION (MODEL SIMPLE CONTINUE NAVIGATION)
+    # ============================================================
+    if room == "introduction":
+        show_room("👁 The Beginning", "You wake up in your bed. \nYou aren't sure of what this building is. \nThe windows are boarded up, and so you have never managed to peer outside. \nBefore they recruited you, they would keep a bag on your head inbetween interviews and trials. \nNow, they don't. They believe you are one of them.")
+        
+        show_continue_button("🛏️ Get up from the bed.")
+
+    # ============================================================
+    # ROOM 2 — BEDROOM (MODEL RESULT -> CONTINUE)
+    # ============================================================
+    elif room == "bedroom":
+        show_room("💤 The Bedroom", "Your bedroom is a fancy place. Adorned in expensive tapestries and antique furniture. \nA chandelier hangs in the middle of the room. It is made of glass, refracting the candle flames like little specks of stardust throughout the room. \nYour attire has been carefully laid out on a chair next to your bed. \nIt isn't like the usual bland, black cloak you usually wear. This one is adorned with golden lines and symbols you do not know.")
+        if not st.session_state.action_complete:
+            left, right = st.columns(2)
+            with left:
+                if st.button("🔮 Don the ritual attire"):
+                    outcome = "The player dons the ritual attire."
+                    story = generate_story(
+                        "The Bedroom", "dons the attire", outcome, "You decide to pick up the cloak and to put it on."
+                    )
+                    add_item("Ritual Attire")
+                    set_result("item", story, "Ritual Attire")
+                    st.rerun()
+                   
+            with right:
+                if st.button("Ignore the attire"):
+                    outcome = "The player leaves the attire alone and continues"
+                    increase_suspicion(1)
+                    story = generate_story(
+                        "The Bedroom", "leaves the attire", outcome, "You decide to leave the cloak alone and continue on your way."
+                    )
+                    set_result("story", story)
+                    st.rerun()
+        else:
+            show_result()
+            show_continue_button()
