@@ -32,6 +32,10 @@ def start_game(name):
     st.session_state.max_suspicion = 5
     st.session_state.pouch = []
     st.session_state.rooms = ["Introduction", "Bedroom", "Corridor", "The Compound", "Ritual Site", "Prolific Detective", "Outside"]
+    st.session_state.compound_location = "main"
+    st.session_state.bells_rung = 1
+    st.session_state.kitchen_explored = False
+    st.session_state.office_explored = False
     st.session_state.room_number = 0
     st.session_state.result_type = ""
     st.session_state.result_message = ""
@@ -189,9 +193,9 @@ def show_result():
  
     if kind == "item":
         st.success(f"🎒 NEW ITEM: {value}")
-    elif kind == "damage":
+    elif kind == "increased suspicion":
         st.error(f"◉ INCREASED SUSPICION: Your suspicion has increased.")
-    elif kind == "heal":
+    elif kind == "decreased suspicion":
         st.success(f"◎ DECREASED SUSPICION: Your suscpicion has decreased.")
     elif kind == "success":
         st.success("✅ Success!")
@@ -277,9 +281,103 @@ else:
         show_continue_button()
 
     # ============================================================
-    # ROOM 3.1 — The Compound
-    # ============================================================    
+    # ROOM 4 — The Compound
+    # ============================================================
     elif room == "compound":
-        show_room("☢️ The Compound", "After heading down the corridor, you arrive at the main salon of the building. \n\nMuch like the corridor, a deafening silence is present. Even the candle flames dare not whisper. \n\n\n\n'Ding \n\nDong \n\nDing \n\nDong'. \n\nYou have heard this sound before - it's the clock bell signifying your time is running out. \n\nThis bell plays 3 times - once every hour, to alert the memembers to hurry with preperations. \n\nWhen the third bell rings you have to be at the ritual site, or they will not let you in, and all of these months of hard work will have been for naught.")
-        
+        location = st.session_state.compound_location
+
+        if location == "main":
+            bell_messages = {
+               1:  "'Ding \n\nDong \n\nDing \n\nDong'. \n\nYou have heard this sound before - it's the clock bell signifying your time is running out. \n\nThis bell plays 3 times - once every hour, to alert the memembers to hurry with preperations. \n\nWhen the third bell rings you have to be at the ritual site, or they will not let you in, and all of these months of hard work will have been for naught.",
+                2: "'Ding \n\nDong \n\nDing \n\nDong'. \n\nThe second bell has rung. You are running out of time.",
+                3:"'Ding \n\nDong \n\nDing \n\nDong'. \n\nThe third bell has rung. If you do not head to the ritual site now, you will have to find another way in."
+             }
+            bell_message = bell_messages[st.session_state.bells_rung]
+            show_room("☢️ The Compound", f"You arrive at the main salon of the building. \n\nMuch like the other rooms, a deafening silence is present. Even the candle flames dare not whisper. \n\n{bell_message}")
+            
+            if not st.session_state.action_complete:
+                left, right = st.columns(2)
+                with left:
+                    if not st.session_state.kitchen_explored:
+                     if st.button("🚪 Investigate the kitchen"):
+                        st.session_state.compound_location = "kitchen"
+                        st.rerun()
+                with right:
+                    if st.button("🚪 Investigate the leader's office"):
+                        if has_item("Office Secret"):
+                            st.session_state.compound_location = "office"
+                            st.rerun()
+                        else:
+                            st.warning("No matter how much you try to force the door, it won't open. There isn't even a visible lock on it.")
+
+        # ============================================================
+        # ROOM 4.1 — The Kitchen
+        # ============================================================
+        elif location == "kitchen":
+            show_room(
+                "🔪 The Kitchen",
+                "You enter the kitchen, to find two cloaked figures talking over the cooking station. What will you do?"
+            )
+
+            if not st.session_state.action_complete:
+                if not st.session_state.get("drawer_opened", False):
+                    left, right = st.columns(2)
+
+                    with left:
+                        if st.button("🍴 Investigate the cutlery drawer"):
+                            st.session_state.drawer_opened = True
+                            st.rerun()
+
+                    with right:
+                        if st.button("👂 Eavesdrop"):
+                            roll = roll_dice()
+                            if not has_item("Ritual Attire"):
+                                roll += 1
+                            if roll >= 4:
+                                add_item("Office Secret")
+                                set_result("story", "You manage to remain out of sight whilst listenting to the conversation. \n\nThese cult memembers are responsible for the upkeep of the leader's office. \n\nYou overhear them discussing the unusual method of getting the door open - one must tilt the second candlestick from the left on the wall next to the door.")
+                            else:
+                                increase_suspicion(1)
+                                set_result("increased suspicion", "You stood out a bit too much when attemping to listen in on the conversation. \n\nThe cloaked figures stop talking.")
+
+                else:
+                    st.write(
+                        "You find a butcher's knife in the drawer. "
+                        "Will you take it?"
+                    )
+                    left, right = st.columns(2)
+
+                    with left:
+                        if st.button("Take the knife"):
+                            add_item("Butcher's Knife")
+                            set_result(
+                                "item",
+                                "You take the butcher's knife.",
+                                "Butcher's Knife"
+                            )
+
+                    with right:
+                        if st.button("Leave the knife"):
+                            set_result(
+                                "story",
+                                "You leave the knife in the drawer."
+                            )
+
+            else:
+                show_result()
+                if st.button("Return to main hall"):
+                    st.session_state.kitchen_explored = True
+                    st.session_state.bells_rung = min(
+                        st.session_state.bells_rung + 1, 3
+                    )
+                    st.session_state.compound_location = "main"
+                    st.session_state.action_complete = False
+                    st.rerun()
+        # ============================================================
+        # ROOM 4.2 — The Office
+        # ============================================================
+        elif location == "office":
+            show_room(
+                "🜏 The Office"
+            )
 
