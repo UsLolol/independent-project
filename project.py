@@ -36,6 +36,10 @@ def start_game(name):
     st.session_state.bells_rung = 1
     st.session_state.kitchen_explored = False
     st.session_state.office_explored = False
+    st.session_state.office_view = "main"
+    st.session_state.office_desk_explored = False
+    st.session_state.office_painting_explored = False
+    st.session_state.powder_left = False
     st.session_state.room_number = 0
     st.session_state.result_type = ""
     st.session_state.result_message = ""
@@ -44,6 +48,15 @@ def start_game(name):
 
 def restart_game():
     st.session_state.clear()
+    st.rerun()
+
+def return_from_office():
+    st.session_state.office_explored = True
+    st.session_state.bells_rung = min(st.session_state.bells_rung + 1, 3)
+    st.session_state.compound_location = "main"
+    st.session_state.office_view = "main"
+    st.session_state.action_complete = False
+    st.session_state.powder_left = False
     st.rerun()
 
 def get_current_room():
@@ -303,9 +316,11 @@ else:
                         st.session_state.compound_location = "kitchen"
                         st.rerun()
                 with right:
-                    if st.button("🚪 Investigate the leader's office"):
+                    if not st.session_state.office_explored:
+                     if st.button("🚪 Investigate the leader's office"):
                         if has_item("Office Secret"):
                             st.session_state.compound_location = "office"
+                            st.session_state.office_view = "main"
                             st.rerun()
                         else:
                             st.warning("No matter how much you try to force the door, it won't open. There isn't even a visible lock on it.")
@@ -378,6 +393,127 @@ else:
         # ============================================================
         elif location == "office":
             show_room(
-                "🜏 The Office"
+                "🜏 The Office", "You manage to get the office door open by tilting the correct candlestick. If there are answers to be found, they will be here. \n\nThere's an antique and ornate desk in the middle of the room, and right behind it there is a strangely big painting depicting the ninth circle of hell, as per Dante's Inferno. \n\nYou have read this book many times before, your son used to love it. \n\nYou can't look away from the painting. There are people encased within ice, naked, and in agony. \n\n... \n\nYou shake it off and continue investigating, the third bell with ring any time now."
             )
+            if st.session_state.office_view == "main":
+                left, right = st.columns (2)
+                with left:
+                    if not st.session_state.office_desk_explored: 
+                     if st.button("🪑 Investigate the desk"):
+                        st.session_state.office_view = "desk"
+                        st.rerun()
 
+                with right:
+                    if not st.session_state.office_painting_explored:        
+                     if st.button("👹 Investigate the painting"):
+                        st.session_state.office_view = "painting"
+                        st.rerun()
+
+                if st.button("Return to the main hall"):
+                    return_from_office()
+
+            elif st.session_state.office_view == "desk":
+                if st.session_state.action_complete:
+                    show_result()
+                    if st.button("Return to the main hall"):
+                        return_from_office()
+
+                else:
+                    st.write(
+                       "You approach the desk, and despite your fear of what you might find, you quickly open each drawer and look inside. There are files, a gun, and a strange purple poweder without a label. What will you look at?"
+                    )
+                    files, gun, powder = st.columns (3)
+
+                    with files:
+                        if st.button("Look at the files"):
+                            add_item("Incriminating Files")
+                            set_result("story", "You pick up a folder full of files and quickly look through them. Most pages are people who have been reported missing on the news. There are hundreds of pages. You feel sick. \n\nYou keep flipping through the pages until you freeze. There is a file on your son. All of his private information and family history laid bare in front of you. \n\nYou pause, and staring at his picture, a tear falls down your cheek. \n\n... \n\nYou compose yourself and place the folder inside your cloak. You hope the police will use this file to finally stop this group.")
+
+
+                    with gun:
+                        if st.button("Inspect the gun"):
+                            add_item("Antique Revolver")
+                            set_result("story", "You pick up the gun. You can very clearly see it is an antique revolver. You open the barrel to see 6 bullets inside. This thing packs a punch. You take it.")
+
+                    with powder:
+                        if st.button("Examine the powder"):
+                            st.session_state.office_view = "powder"
+
+            elif st.session_state.office_view == "powder":
+                if st.session_state.action_complete:
+                    show_result()
+                    if st.session_state.powder_left:
+                        keep_exploring, leave_office = st.columns(2)
+                        with keep_exploring:
+                            if st.button("Keep exploring the office"):
+                                st.session_state.office_desk_explored = True
+                                st.session_state.office_view = "main"
+                                st.session_state.action_complete = False
+                                st.session_state.powder_left = False
+                                st.rerun()
+                        with leave_office:
+                            if st.button("Return to the main hall"):
+                                return_from_office()
+                    elif st.button("Return to the main hall"):
+                        return_from_office()
+                else:
+                    st.write("What will you do with the powder?")
+                    take, inhale, leave = st.columns(3)
+
+                    with take:
+                        if st.button("🍄 Take it"):
+                            add_item("Purple Powder")
+                            set_result(
+                                "story",
+                                "You decide to take the vial with you. Even if you are unsure of what it is, it may prove useful."
+                            )
+
+                    with inhale:
+                        if st.button("👃 Inhale it"):
+                            add_item("The Mark")
+                            set_result(
+                                "story",
+                                "You have no time to waste, and decide to inhale the powder to figure out what it could be. \n\n... \n\nAs soon as you inhale the powder your head starts to feel like it's floating and you fall to the floor. \n\nAs you open your eyes, you find yourself in the same hell depicted by that painting. \n\nWhat seems to be a demon speaks to you. \n\n'Veni, o proles perfida. Una adhuc victima, et inter vivos in mundo mortalium ambulabo. Abi, o proles perfida. Una adhuc victima, et inter vivos in mundo mortalium ambulabo.' \n\nAs you tremble in terror, the demon approaches you and claws a mark upon your flesh. \n\nYou pass out again. \n\n... \n\nYou open your eyes and wake up. Unsure of how long as passed, you stand up, and look upon your arm to find the mark etched by the demon."
+                            )
+                    with leave:
+                        if st.button("🚪 Leave it"):
+                            st.session_state.powder_left = True
+                            set_result(
+                                "story",
+                                "You decide it is better to not mess with strange substances you do not know, especially if they seem like class A drugs."
+                            )
+
+            elif st.session_state.office_view == "painting":
+                if st.session_state.action_complete:
+                    show_result()
+                    if st.button("Return to the main hall"):
+                        return_from_office()
+
+                else:
+                    st.write(
+                        "You decide to approach the painting, and as revolting as it is, you decide to take a closer look. \n\nYou notice a very faint string of numbers written on the right corner of the frame. \n\n'9257' \n\nYou decide to move the painting after noting down the code, and behind it a safe is revealed. What will you do?"
+                    )                        
+                    open_safe, leave_safe = st.columns (2)
+
+                    with open_safe:
+                        if st.button("🔐 Open the safe"):
+                            roll = roll_dice()
+
+                            if roll >= 4:
+                                add_item("Prefidues Member List")
+                                set_result(
+                                    "story",
+                                    "The safe opens to reveal money inside, and a folder labeled 'Prefidus'. \n\nYou open the file to find the what seems to be a record of every memeber of the cult, including their faces, names, locations, and whether they are active or not. \n\nThis is groundbreaking. It's what you've spent months working so hard to get. You put it inside your cloak."
+                                )
+                            else:
+                                increase_suspicion(3)
+                                set_result(
+                                    "increased suspicion",
+                                    "As you open the safe, a container of liquid nitrogen bursts and a cloud spreads. Everything that was inside this safe is now frozen, and part of your cloak is now frozen solid. You have made a grave mistake, but there is nothing you can do about it now. You decide to leave."
+                                )    
+                    with leave_safe:
+                        if st.button("🔐 Leave the safe alone"):
+                            set_result(
+                                "story",
+                                "You decide to leave the safe alone. After all, you've spent long enough in this group to know there is probably some kind of dangerous contraption within it, and you also know you have no idea on how to safely deactivate right now."
+                            )
