@@ -1,8 +1,10 @@
 import os
 import random
+import base64
 import streamlit as st
 from dotenv import load_dotenv
 from google import genai
+from pathlib import Path
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
  
@@ -15,6 +17,36 @@ MODEL_NAME = "gemini-3.5-flash-lite"
 # ================================================================
 #REMEMBER TO COME BACK AND GIVE IT A NAME
 st.set_page_config(page_title = "A Parent's bond", page_icon = "⛧", layout = "centered" )
+image_path = Path(__file__).parent / "assets" / "background.jpg"
+background = base64.b64encode(image_path.read_bytes()).decode("ascii")
+
+st.markdown(
+    f"""
+    <style>
+    .stApp{{
+        background-image:
+            linear-gradient(rgba(12, 14, 18, 0.58), rgba(12, 14, 18, 0.68)),
+            url("data:image/jpeg;base64,{background}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+
+    .stApp h1, .stApp h2 {{
+        color: #F1D6C8;
+    }}
+
+    [data-testid="stMarkdownContainer"] p {{
+        line-height: 1.65;
+    }}
+
+    [data-testid="stButton"] > button {{
+        border-radius: 10px;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 st.title("⛧ A Parent's bond")
 
 # ================================================================
