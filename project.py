@@ -15,9 +15,8 @@ MODEL_NAME = "gemini-3.5-flash-lite"
 # ================================================================
 # 1. PAGE SETUP
 # ================================================================
-#REMEMBER TO COME BACK AND GIVE IT A NAME
-st.set_page_config(page_title = "A Parent's bond", page_icon = "⛧", layout = "centered" )
-image_path = Path(__file__).parent / "assets" / "background.jpg"
+st.set_page_config(page_title = "A Parent's Bond", page_icon = "⛧", layout = "centered" )
+image_path = Path(__file__).parent / "assets" / "background.jpg" 
 background = base64.b64encode(image_path.read_bytes()).decode("ascii")
 
 st.markdown(
